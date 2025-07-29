@@ -1,0 +1,14 @@
+IP :10.194.221.118
+Usuario : alpha7
+Senha : supertux
+
+
+Como o sistema devera fazer?
+    Acessara o PG da maquina que acionara, criara uma base de dados com o template do clean chinchila
+    Criara o DBlink e fara a conexão com a base de Origem trazendo todas as informações e validação
+    Tirara um backup da base com o usuario chinchila, fazer a consulta do MD5 e ira transferir para base de destino
+    Conferir o md5 e iniciar o restaura rapido
+    Fazer o insert da semente manualmente 
+    Atualizarar o sistema para a versão e iniciara o wildlfy
+
+
