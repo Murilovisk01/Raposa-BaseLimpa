@@ -206,6 +206,28 @@ def exibir_menu():
             else:
                 logging.info("Atualização cancelada pelo usuário.")
 
+            # Atualizando a semente no cliente, precisa prestar atenção para que coloque a versão certa
+            logging.info("Atualizando a Semente")
+
+            semente = input("Qual a semente que devemos rodar: ")
+            db_nome = input("Qual nome da base de dados: ")
+
+            sshComandos.executarComando(destino, senha, f"""
+            psql -U chinchila -d {db_nome} -c "SELECT setval('public.seq_geradorid', {semente} * 50000000, true); UPDATE geradorid SET valorid=ultimovalorid + 1; SELECT setval('public.seq_revisaolog', 1, true); SELECT setval('public.seq_transacao', 1, true);"
+            """)
+            logging.info("\033[92mAtualizado a Semente com sucesso\033[0m")
+
+            # Atualizando o codigo do cliente na base de dados
+            logging.info("Atualizando o codigo do cliente na base de dados")
+            grupocliente, codigocliente = destino.split("-")
+
+            sshComandos.executarComando(destino, senha, f"""
+            psql -U chinchila -d {db_nome} -c "UPDATE unidadenegocio SET grupoclientealpha7 = '{grupocliente}',codigoclientealpha7='{codigocliente} WHERE id = 1"
+            """)
+
+            sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
+            sshComandos.executarComando(destino,senha,"sudo service wildfly start")
+
             logging.info("processo concluído com sucesso!")
             fim = time.time()
             duracao = fim - inicio
@@ -287,6 +309,29 @@ def exibir_menu():
             else:
                 logging.info("Atualização cancelada pelo usuário.")
 
+                # Atualizando a semente no cliente, precisa prestar atenção para que coloque a versão certa
+            logging.info("Atualizando a Semente")
+
+            semente = input("Qual a semente que devemos rodar: ")
+            db_nome = input("Qual nome da base de dados: ")
+
+            sshComandos.executarComando(destino, senha, f"""
+            psql -U chinchila -d {db_nome} -c "SELECT setval('public.seq_geradorid', {semente} * 50000000, true); UPDATE geradorid SET valorid=ultimovalorid + 1; SELECT setval('public.seq_revisaolog', 1, true); SELECT setval('public.seq_transacao', 1, true);"
+            """)
+            logging.info("\033[92mAtualizado a Semente com sucesso\033[0m")
+
+            # Atualizando o codigo do cliente na base de dados
+            logging.info("Atualizando o codigo do cliente na base de dados")
+            grupocliente, codigocliente = destino.split("-")
+
+            sshComandos.executarComando(destino, senha, f"""
+            psql -U chinchila -d {db_nome} -c "UPDATE unidadenegocio SET grupoclientealpha7 = '{grupocliente}',codigoclientealpha7='{codigocliente} WHERE id = 1"
+            """)
+
+            sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
+            sshComandos.executarComando(destino,senha,"sudo service wildfly start")
+
+            logging.info("processo concluído com sucesso!")
             fim = time.time()
             duracao = fim - inicio
             logging.info(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
@@ -367,6 +412,29 @@ def exibir_menu():
             else:
                 logging.warning("Atualização cancelada pelo usuário.")
 
+            # Atualizando a semente no cliente, precisa prestar atenção para que coloque a versão certa
+            logging.info("Atualizando a Semente")
+
+            semente = input("Qual a semente que devemos rodar: ")
+            db_nome = input("Qual nome da base de dados: ")
+
+            sshComandos.executarComando(destino, senha, f"""
+            psql -U chinchila -d {db_nome} -c "SELECT setval('public.seq_geradorid', {semente} * 50000000, true); UPDATE geradorid SET valorid=ultimovalorid + 1; SELECT setval('public.seq_revisaolog', 1, true); SELECT setval('public.seq_transacao', 1, true);"
+            """)
+            logging.info("\033[92mAtualizado a Semente com sucesso\033[0m")
+
+            # Atualizando o codigo do cliente na base de dados
+            logging.info("Atualizando o codigo do cliente na base de dados")
+            grupocliente, codigocliente = destino.split("-")
+
+            sshComandos.executarComando(destino, senha, f"""
+            psql -U chinchila -d {db_nome} -c "UPDATE unidadenegocio SET grupoclientealpha7 = '{grupocliente}',codigoclientealpha7='{codigocliente} WHERE id = 1"
+            """)
+
+            sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
+            sshComandos.executarComando(destino,senha,"sudo service wildfly start")
+            
+            logging.info("processo concluído com sucesso!")
             fim = time.time()
             duracao = fim - inicio
             logging.info(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
