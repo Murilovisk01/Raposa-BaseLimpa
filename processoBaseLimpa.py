@@ -6,6 +6,7 @@ import pandas as pd
 from tabulate import tabulate
 from conexaoSSH import ConexaoSSH
 from config import carregar_configuracoes
+import logging
 
 class importacaoBaseLimpa:
     def __init__(self):
@@ -24,7 +25,7 @@ class importacaoBaseLimpa:
                 sys.path.append(caminho_scripts)
 
             modulo = importlib.import_module(sistema)
-            print(f"Módulo {sistema} importado com sucesso!")
+            logging.info(f"Módulo {sistema} importado com sucesso!")
 
             # Acessar os objetos no módulo importado
             queries = {obj_name: getattr(modulo, obj_name, None) for obj_name in [
@@ -45,9 +46,9 @@ class importacaoBaseLimpa:
             return queries
 
         except ModuleNotFoundError:
-            print(f"Módulo {sistema} não encontrado. Certifique-se de que o nome está correto e que o módulo existe.")
+            logging.error(f"Módulo {sistema} não encontrado. Certifique-se de que o nome está correto e que o módulo existe.")
         except Exception as e:
-            print(f"Ocorreu um erro ao importar o módulo: {e}", exc_info=True)
+            logging.inferroro(f"Ocorreu um erro ao importar o módulo: {e}", exc_info=True)
 
         return {}
 
@@ -64,7 +65,7 @@ class importacaoBaseLimpa:
                 sys.path.append(caminho_scripts)
 
             modulo = importlib.import_module(sistema)
-            print(f"Módulo {sistema} importado com sucesso!")
+            logging.info(f"Módulo {sistema} importado com sucesso!")
 
             # Acessar os objetos no módulo importado
             queries = {obj_name: getattr(modulo, obj_name, None) for obj_name in [
@@ -89,9 +90,9 @@ class importacaoBaseLimpa:
             return queries
 
         except ModuleNotFoundError:
-            print(f"Módulo {sistema} não encontrado. Certifique-se de que o nome está correto e que o módulo existe.")
+            logging.error(f"Módulo {sistema} não encontrado. Certifique-se de que o nome está correto e que o módulo existe.")
         except Exception as e:
-            print(f"Ocorreu um erro ao importar o módulo: {e}", exc_info=True)
+            logging.error(f"Ocorreu um erro ao importar o módulo: {e}", exc_info=True)
 
         return {}
 
@@ -166,7 +167,7 @@ class importacaoBaseLimpa:
         try:
         
             with conn_chinchila as source_conn, conn_postgres as source_conn_postgres:
-                print("Iniciando Base Limpa!")
+                logging.info("Iniciando Base Limpa!")
 
                 with source_conn.cursor() as source_cursor, source_conn_postgres.cursor() as source_cursor_postgres:
                     queries = self.importSistemaBaseLimpa(opcao_script)
@@ -176,25 +177,25 @@ class importacaoBaseLimpa:
                     ssh = ConexaoSSH(origem)
                     dbNomeOrigem = ssh.get_database_name(username='alpha7', password='supertux')
                     if not dbNomeOrigem:
-                        print("Falha ao obter o nome da base de dados via SSH.")
+                        logging.error("Falha ao obter o nome da base de dados via SSH.")
                         return
-                    print(f"Nome da base de dados obtido: {dbNomeOrigem}")
+                    logging.info(f"Nome da base de dados obtido: {dbNomeOrigem}")
     
                     dblink_params = f"host={host} user=chinchila password=chinchila dbname={dbNomeOrigem}"
 
-                    print(f"{dblink_params}")
+                    logging.info(f"{dblink_params}")
 
                     source_cursor_postgres.execute(queries['create_dblink_query'])
-                    print("Query create_dblink_query executada com sucesso!")
+                    logging.info("Query create_dblink_query executada com sucesso!")
                     source_conn_postgres.commit()
 
                     source_cursor.execute(queries['conexao_dblink'],(dblink_params,))
-                    print("Query conexao_dblink executada com sucesso!")
+                    logging.info("Query conexao_dblink executada com sucesso!")
 
                     source_cursor.execute(queries['versao_bases_query'])
-                    print("Query versao_bases_query executada com sucesso!")
+                    logging.info("Query versao_bases_query executada com sucesso!")
                     versao = source_cursor.fetchone()[0]
-                    print(f"\033[92m{versao}\033[0m")
+                    logging.info(f"\033[92m{versao}\033[0m")
 
                     queries_to_run = [
                         'limpza_base_destino_query','query_cest','query_cfop','query_curvaabc', 'query_dcb', 'query_feriado',
@@ -217,23 +218,23 @@ class importacaoBaseLimpa:
                                 source_cursor.execute(query)
                                 source_conn.commit()
 
-                                print(f"Query realizado com sucesso para {query_name}")
+                                logging.info(f"Query realizado com sucesso para {query_name}")
 
                             except psycopg2.Error as e:
                                 source_conn.rollback()
-                                print(f"Erro ao executar a consulta {query_name}: {e}")
-                                if print(f"Erro ao executar a consulta {query_name}: {e}\nCorrija o problema e clique em OK para continuar..."):
+                                logging.error(f"Erro ao executar a consulta {query_name}: {e}")
+                                if logging.error(f"Erro ao executar a consulta {query_name}: {e}\nCorrija o problema e clique em OK para continuar..."):
                                     return True
 
                     def imprimir_em_blocos(df, bloco=6):
                         colunas = df.columns.tolist()
                         for i in range(0, len(colunas), bloco):
                             df_temp = df[colunas[i:i+bloco]]
-                            print(tabulate(df_temp, headers='keys', tablefmt='fancy_grid', showindex=False))
-                            print("\n")
+                            logging.info(tabulate(df_temp, headers='keys', tablefmt='fancy_grid', showindex=False))
+                            logging.info("\n")
 
                     source_cursor.execute(queries['query_validacao'])
-                    print("\n\033[92m✔ Query 'query_validacao' executada com sucesso!\033[0m")
+                    logging.info("\n\033[92m✔ Query 'query_validacao' executada com sucesso!\033[0m")
                     validacao = source_cursor.fetchall()
                     colunas = [desc[0] for desc in source_cursor.description]
 
@@ -259,10 +260,10 @@ class importacaoBaseLimpa:
                                 source_conn.commit()
 
                                 # Log após o INSERT
-                                print(f"Query realizado com sucesso para {query_name}")
+                                logging.info(f"Query realizado com sucesso para {query_name}")
 
                             except psycopg2.Error as e:
-                                print(f"Erro ao executar a consulta {query_name}: {e}")
+                                logging.error(f"Erro ao executar a consulta {query_name}: {e}")
 
                     source_cursor.execute(queries['cfopOperacaoFiscal1'])
                     source_cursor.execute(queries['cfopOperacaoFiscal2'])
@@ -271,50 +272,50 @@ class importacaoBaseLimpa:
                         nq_cfop = row[0]
                         source_cursor.execute(nq_cfop)
                     source_cursor.execute(queries['cfopOperacaoFiscal3'])
-                    print("Query realizado com sucesso para CFOP Operação")
+                    logging.info("Query realizado com sucesso para CFOP Operação")
 
                     source_cursor.execute(queries['alterarVinculoProdutoReferenciaNaoE'])
                     alterar = source_cursor.fetchall()
                     for row in alterar:
                         nq_alterar = row[0]
                         source_cursor.execute(nq_alterar)
-                    print("Query realizado com sucesso para alterarVinculoProdutoReferenciaNaoE")
+                    logging.info("Query realizado com sucesso para alterarVinculoProdutoReferenciaNaoE")
 
                     source_cursor.execute(queries['excluir_gerador'])
                     excluir_gerador = source_cursor.fetchall()
                     for row in excluir_gerador:
                         nq_excluir_gerador = row[0]
                         source_cursor.execute(nq_excluir_gerador)
-                    print("Query realizado com sucesso para excluir_gerador")
+                    logging.info("Query realizado com sucesso para excluir_gerador")
 
                     source_cursor.execute(queries['criaSequencia'])
-                    print("Query realizado com sucesso para criaSequencia")
+                    logging.info("Query realizado com sucesso para criaSequencia")
 
                     source_cursor.execute(queries['alterar_etiqueta_duplicada'])
                     alterar_etiqueta_duplicada = source_cursor.fetchall()
                     for row in alterar_etiqueta_duplicada:
                         nq_alterar_etiqueta_duplicada = row[0]
                         source_cursor.execute(nq_alterar_etiqueta_duplicada)
-                    print("Query realizado com sucesso para alterar_etiqueta_duplicada")
+                    logging.info("Query realizado com sucesso para alterar_etiqueta_duplicada")
 
                     source_cursor.execute(queries['reinicia_jboss'])
-                    print("Query realizado com sucesso para reinicia_jboss")
+                    logging.info("Query realizado com sucesso para reinicia_jboss")
 
                     source_cursor.execute(queries['remove_sequencia'])
-                    print("Query realizado com sucesso para remove_sequencia")
+                    logging.info("Query realizado com sucesso para remove_sequencia")
                     
                     source_cursor.execute(queries['query_proxima_semente'])
                     semente = source_cursor.fetchone()[0]
-                    print(f"Próxima semente que deve ser rodada: {semente}")
+                    logging.info(f"Próxima semente que deve ser rodada: {semente}")
                     source_conn.commit()
 
         except psycopg2.Error as e:
-            print(f"Ocorreu um erro: {e}")
+            logging.info(f"Ocorreu um erro: {e}")
 
     def baseLimpaPoupaqui(self,conn_chinchila,conn_postgres,opcao_script,origem):
         try:
             with conn_chinchila as source_conn, conn_postgres as source_conn_postgres:
-                print("Iniciando Base Limpa PoupAqui!")
+                logging.info("Iniciando Base Limpa PoupAqui!")
 
                 with source_conn.cursor() as source_cursor, source_conn_postgres.cursor() as source_cursor_postgres:
                     queries_poupaqui = self.importSistemaBaseLimpaPoupaAqui(opcao_script)
@@ -323,23 +324,23 @@ class importacaoBaseLimpa:
                     ssh = ConexaoSSH(origem)
                     dbNomeOrigem = ssh.get_database_name(username='alpha7', password='supertux')
                     if not dbNomeOrigem:
-                        print("Falha ao obter o nome da base de dados via SSH.")
+                        logging.error("Falha ao obter o nome da base de dados via SSH.")
                         return
-                    print(f"Nome da base de dados obtido: {dbNomeOrigem}")
+                    logging.info(f"Nome da base de dados obtido: {dbNomeOrigem}")
 
                     dblink_params = f"host={host} user=chinchila password=chinchila dbname={dbNomeOrigem}"
 
                     source_cursor_postgres.execute(queries_poupaqui['create_dblink_query'])
-                    print("Query create_dblink_query executada com sucesso!")
+                    logging.info("Query create_dblink_query executada com sucesso!")
                     source_conn_postgres.commit()
 
                     source_cursor.execute(queries_poupaqui['conexao_dblink'],(dblink_params,))
-                    print("Query conexao_dblink executada com sucesso!")
+                    logging.info("Query conexao_dblink executada com sucesso!")
 
                     source_cursor.execute(queries_poupaqui['versao_bases_query'])
-                    print("Query versao_bases_query executada com sucesso!")
+                    logging.info("Query versao_bases_query executada com sucesso!")
                     versao = source_cursor.fetchone()[0]
-                    print(f"{versao}")
+                    logging.info(f"{versao}")
 
                     queries_poupaqui_to_run = [
                         'limpza_base_destino_query','query_cest','query_cfop','query_curvaabc', 'query_dcb', 'query_feriado',
@@ -365,23 +366,23 @@ class importacaoBaseLimpa:
                                 source_cursor.execute(queries_poupaqui_run)
                                 source_conn.commit()
 
-                                print(f"Query realizado com sucesso para {query_name}")
+                                logging.info(f"Query realizado com sucesso para {query_name}")
 
                             except psycopg2.Error as e:
                                 source_conn.rollback()
-                                print(f"Erro ao executar a consulta {query_name}: {e}")
-                                if print(f"Erro ao executar a consulta {query_name}: {e}\nCorrija o problema e clique em OK para continuar..."):
+                                logging.error(f"Erro ao executar a consulta {query_name}: {e}")
+                                if logging.error(f"Erro ao executar a consulta {query_name}: {e}\nCorrija o problema e clique em OK para continuar..."):
                                     return True
                                 
                     def imprimir_em_blocos(df, bloco=6):
                         colunas = df.columns.tolist()
                         for i in range(0, len(colunas), bloco):
                             df_temp = df[colunas[i:i+bloco]]
-                            print(tabulate(df_temp, headers='keys', tablefmt='fancy_grid', showindex=False))
-                            print("\n")
+                            logging.info(tabulate(df_temp, headers='keys', tablefmt='fancy_grid', showindex=False))
+                            logging.info("\n")
 
                     source_cursor.execute(queries_poupaqui['query_validacao'])
-                    print("\n\033[92m✔ Query 'query_validacao' executada com sucesso!\033[0m")
+                    logging.info("\n\033[92m✔ Query 'query_validacao' executada com sucesso!\033[0m")
                     validacao = source_cursor.fetchall()
                     colunas = [desc[0] for desc in source_cursor.description]
 
@@ -406,10 +407,10 @@ class importacaoBaseLimpa:
                                 source_conn.commit()
 
                                 # Log após o INSERT
-                                print(f"Query realizado com sucesso para {query_name}")
+                                logging.info(f"Query realizado com sucesso para {query_name}")
 
                             except psycopg2.Error as e:
-                                print(f"Erro ao executar a consulta {query_name}: {e}")
+                                logging.error(f"Erro ao executar a consulta {query_name}: {e}")
 
                     source_cursor.execute(queries_poupaqui['cfopOperacaoFiscal1'])
                     source_cursor.execute(queries_poupaqui['cfopOperacaoFiscal2'])
@@ -418,43 +419,43 @@ class importacaoBaseLimpa:
                         nq_cfop = row[0]
                         source_cursor.execute(nq_cfop)
                     source_cursor.execute(queries_poupaqui['cfopOperacaoFiscal3'])
-                    print("Query realizado com sucesso para CFOP Operação")
+                    logging.info("Query realizado com sucesso para CFOP Operação")
 
                     source_cursor.execute(queries_poupaqui['alterarVinculoProdutoReferenciaNaoE'])
                     alterar = source_cursor.fetchall()
                     for row in alterar:
                         nq_alterar = row[0]
                         source_cursor.execute(nq_alterar)
-                    print("Query realizado com sucesso para alterarVinculoProdutoReferenciaNaoE")
+                    logging.info("Query realizado com sucesso para alterarVinculoProdutoReferenciaNaoE")
 
                     source_cursor.execute(queries_poupaqui['excluir_gerador'])
                     excluir_gerador = source_cursor.fetchall()
                     for row in excluir_gerador:
                         nq_excluir_gerador = row[0]
                         source_cursor.execute(nq_excluir_gerador)
-                    print("Query realizado com sucesso para excluir_gerador")
+                    logging.info("Query realizado com sucesso para excluir_gerador")
 
                     source_cursor.execute(queries_poupaqui['criaSequencia'])
-                    print("Query realizado com sucesso para criaSequencia")
+                    logging.info("Query realizado com sucesso para criaSequencia")
 
                     source_cursor.execute(queries_poupaqui['alterar_etiqueta_duplicada'])
                     alterar_etiqueta_duplicada = source_cursor.fetchall()
                     for row in alterar_etiqueta_duplicada:
                         nq_alterar_etiqueta_duplicada = row[0]
                         source_cursor.execute(nq_alterar_etiqueta_duplicada)
-                    print("Query realizado com sucesso para alterar_etiqueta_duplicada")
+                    logging.info("Query realizado com sucesso para alterar_etiqueta_duplicada")
 
                     source_cursor.execute(queries_poupaqui['reinicia_jboss'])
-                    print("Query realizado com sucesso para reinicia_jboss")
+                    logging.info("Query realizado com sucesso para reinicia_jboss")
 
                     source_cursor.execute(queries_poupaqui['remove_sequencia'])
-                    print("Query realizado com sucesso para remove_sequencia")
+                    logging.info("Query realizado com sucesso para remove_sequencia")
                     
                     source_cursor.execute(queries_poupaqui['query_proxima_semente'])
                     semente = source_cursor.fetchone()[0]
-                    print(f"Próxima semente que deve ser rodada: {semente}")
+                    logging.info(f"Próxima semente que deve ser rodada: {semente}")
 
                     source_conn.commit()
 
         except psycopg2.Error as e:
-            print(f"Ocorreu um erro: {e}")
+            logging.info(f"Ocorreu um erro: {e}")

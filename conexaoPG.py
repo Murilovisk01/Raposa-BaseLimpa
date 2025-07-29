@@ -3,6 +3,7 @@ import psycopg2
 from psycopg2 import sql
 from config import carregar_configuracoes
 from datetime import datetime
+import logging
 
 
 class Postgres:
@@ -14,7 +15,7 @@ class Postgres:
         porta_pg = config['Database']['porta_pg']
         
         try:
-            print("Função de Criação da Base Oficial")
+            logging.info("Função de Criação da Base Oficial")
 
             # Gerar nome da base com data e número aleatório
             data_atual = datetime.now().strftime("%d_%m_%y")
@@ -51,12 +52,12 @@ class Postgres:
             cursor.close()
             connection.close()
 
-            print(f"\033[92m✔ Base Oficial Alpha7 '{nome_final}' criada com sucesso!\033[0m")
+            logging.info(f"\033[92m✔ Base Oficial Alpha7 '{nome_final}' criada com sucesso!\033[0m")
 
             return nome_final  # Retorna o nome gerado
 
         except psycopg2.Error as e:
-            print(f"\033[91m✖ Erro ao criar a base de dados: {e}\033[0m")
+            logging.error(f"\033[91m✖ Erro ao criar a base de dados: {e}\033[0m")
             return None
         
     def conexaoBaseOficialChinchila(self,base_nome):
@@ -80,7 +81,7 @@ class Postgres:
             return conn  
 
         except psycopg2.Error as e:
-            print(f"Ocorreu um erro ao conectar à base de dados: {e}")
+            logging.error(f"Ocorreu um erro ao conectar à base de dados: {e}")
             return None  
     
     def conexaoBaseOficialPostgres(self,base_nome):
@@ -104,5 +105,5 @@ class Postgres:
             return conn  
 
         except psycopg2.Error as e:
-            print(f"Ocorreu um erro ao conectar à base de dados: {e}")
+            logging.error(f"Ocorreu um erro ao conectar à base de dados: {e}")
             return None  

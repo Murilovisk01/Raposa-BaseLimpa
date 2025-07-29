@@ -1,6 +1,6 @@
 import os
 import subprocess
-
+import logging
 from config import carregar_configuracoes
 
 class Backup:
@@ -14,7 +14,7 @@ class Backup:
 
         # Montar caminho completo do arquivo de backup
         caminho = os.path.join(caminho_backup, f"{destino}.backup")
-        print("Iniciando Backup")
+        logging.info("Iniciando Backup")
         # Executar comando pg_dump
         try:
             subprocess.run(
@@ -31,10 +31,10 @@ class Backup:
                 env={"PGPASSWORD": "chinchila"},
                 text=True
             )
-            print(f"\033[92m✔ Backup da base '{destino}' gerado com sucesso em: {caminho}\033[0m")
+            logging.info(f"\033[92m✔ Backup da base '{destino}' gerado com sucesso em: {caminho}\033[0m")
             return caminho
         except subprocess.CalledProcessError as e:
-            print(f"\033[91m✖ Erro ao gerar o backup da base '{destino}': {e}\033[0m")
+            logging.error(f"\033[91m✖ Erro ao gerar o backup da base '{destino}': {e}\033[0m")
             return None
     
     def conferirMd5sum(self,caminho):
@@ -46,11 +46,11 @@ class Backup:
                 text=True
             )
             hash_md5 = resultado.stdout.split()[0]
-            print(f"\033[92m✔ MD5 do arquivo '{caminho}': {hash_md5}\033[0m")
+            logging.info(f"\033[92m✔ MD5 do arquivo '{caminho}': {hash_md5}\033[0m")
             return hash_md5
 
         except subprocess.CalledProcessError as e:
-            print(f"\033[91m✖ Erro ao calcular o MD5: {e}\033[0m")
+            logging.error(f"\033[91m✖ Erro ao calcular o MD5: {e}\033[0m")
             return None
 
 class Transfer:
@@ -65,6 +65,6 @@ class Transfer:
                 ['scp', caminho_backup, destino_path],
                 check=True
             )
-            print("\033[92m✔ Transferência feita com sucesso!\033[0m")
+            logging.info("\033[92m✔ Transferência feita com sucesso!\033[0m")
         except subprocess.CalledProcessError as e:
-            print(f"\033[91m✖ Erro na transferência via SCP: {e}\033[0m")
+            logging.error(f"\033[91m✖ Erro na transferência via SCP: {e}\033[0m")

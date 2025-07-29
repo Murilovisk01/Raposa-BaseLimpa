@@ -3,26 +3,38 @@ from processoBaseLimpa import importacaoBaseLimpa
 from ferramentas import atualizacaoServidor, executarComando
 from transferBackup import Backup, Transfer
 import time
+import logging
 
+# Configuração do logging
+logging.basicConfig(
+    filename='raposa_baselimpa.log',
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s'
+)
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+console.setFormatter(formatter)
+logging.getLogger().addHandler(console)
 
 def exibir_menu():
     while True:
         
-        print("\033[92mOlá, bem-vinda! Selecione uma das funções abaixo:\033[0m")
-        print("1 - Base Limpa Padrão")
-        print("2 - Base Limpa Padrão Produtos Ativo/Inativos")
-        print("3 - Base Limpa Poupaqui")
-        print("4 - Base Limpa Poupaqui Produtos Ativo/Inativos")
-        print("5 - Exit")
+        logging.info("\033[92mOlá, bem-vinda! Selecione uma das funções abaixo:\033[0m")
+        logging.info("1 - Base Limpa Padrão")
+        logging.info("2 - Base Limpa Padrão Produtos Ativo/Inativos")
+        logging.info("3 - Base Limpa Poupaqui")
+        logging.info("4 - Base Limpa Poupaqui Produtos Ativo/Inativos")
+        logging.info("5 - Exit")
 
         opcao = input("Digite o número da opção desejada: ")
 
         if opcao == "1":
             inicio = time.time()
-            print("Você selecionou: Base Limpa Padrão")
+            logging.info("Você selecionou: Base Limpa Padrão")
             destino = codigoDestino()
             origem = codigoOrigem()
-            print(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
+            logging.info(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
             if not continuar():
                 return
 
@@ -34,11 +46,11 @@ def exibir_menu():
 
             # Verificar se a conexão foi bem-sucedida
             if not conn_chinchila:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
             
             if not conn_postgres:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
 
             # Instanciar a classe que cuida da base limpa
@@ -55,12 +67,12 @@ def exibir_menu():
             arquivo_gerado = fazerBackup.fazendoBackup(db_name)
 
             if not arquivo_gerado:
-                print("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
+                logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
                 return
             
             fazerBackup.conferirMd5sum(arquivo_gerado)
 
-            print(f"Iniciando a transferencia para o Servidor de destino {destino}")
+            logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
             transfeBackup = Transfer()
             transfeBackup.baseTransfer(destino, arquivo_gerado)
 
@@ -79,20 +91,20 @@ def exibir_menu():
                 nome_arquivo = at_versao.obter_nome_arquivo(versao)
 
                 if nome_arquivo:
-                    print(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
+                    logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
                     
                     sshComandos.executarComando(destino, senha, 
                         "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
                     sshComandos.executarComando(destino, senha, 
                         f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
-                    print("Atualização concluída com sucesso!")
+                    logging.info("Atualização concluída com sucesso!")
                 else:
-                    print(f"Versão {versao} não encontrada.")
+                    logging.warning(f"Versão {versao} não encontrada.")
             else:
-                print("Atualização cancelada pelo usuário.")
+                logging.warning("Atualização cancelada pelo usuário.")
 
             # Atualizando a semente no cliente, precisa prestar atenção para que coloque a versão certa
-            print("Atualizando a Semente")
+            logging.info("Atualizando a Semente")
 
             semente = input("Qual a semente que devemos rodar: ")
             db_nome = input("Qual nome da base de dados: ")
@@ -100,10 +112,10 @@ def exibir_menu():
             sshComandos.executarComando(destino, senha, f"""
             psql -U chinchila -d {db_nome} -c "SELECT setval('public.seq_geradorid', {semente} * 50000000, true); UPDATE geradorid SET valorid=ultimovalorid + 1; SELECT setval('public.seq_revisaolog', 1, true); SELECT setval('public.seq_transacao', 1, true);"
             """)
-            print("\033[92mAtualizado a Semente com sucesso\033[0m")
+            logging.info("\033[92mAtualizado a Semente com sucesso\033[0m")
 
             # Atualizando o codigo do cliente na base de dados
-            print("Atualizando o codigo do cliente na base de dados")
+            logging.info("Atualizando o codigo do cliente na base de dados")
             grupocliente, codigocliente = destino.split("-")
 
             sshComandos.executarComando(destino, senha, f"""
@@ -113,6 +125,7 @@ def exibir_menu():
             sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
             sshComandos.executarComando(destino,senha,"sudo service wildfly start")
 
+            logging.info("processo concluído com sucesso!")
             fim = time.time()
             duracao = fim - inicio
             print(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
@@ -121,10 +134,10 @@ def exibir_menu():
         elif opcao == "2":
 
             inicio = time.time()
-            print("Você selecionou: Base Limpa Padrão Produtos Ativo/Inativos")
+            logging.info("Você selecionou: Base Limpa Padrão Produtos Ativo/Inativos")
             destino = codigoDestino()
             origem = codigoOrigem()
-            print(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
+            logging.info(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
             if not continuar():
                 return
 
@@ -136,11 +149,11 @@ def exibir_menu():
 
             # Verificar se a conexão foi bem-sucedida
             if not conn_chinchila:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
             
             if not conn_postgres:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
 
             # Instanciar a classe que cuida da base limpa
@@ -157,12 +170,12 @@ def exibir_menu():
             arquivo_gerado = fazerBackup.fazendoBackup(db_name)
 
             if not arquivo_gerado:
-                print("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
+                logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
                 return
             
             fazerBackup.conferirMd5sum(arquivo_gerado)
 
-            print(f"Iniciando a transferencia para o Servidor de destino {destino}")
+            logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
             transfeBackup = Transfer()
             transfeBackup.baseTransfer(destino, arquivo_gerado)
 
@@ -181,30 +194,31 @@ def exibir_menu():
                 nome_arquivo = at_versao.obter_nome_arquivo(versao)
 
                 if nome_arquivo:
-                    print(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
+                    logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
                     
                     sshComandos.executarComando(destino, senha, 
                         "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
                     sshComandos.executarComando(destino, senha, 
                         f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
-                    print("Atualização concluída com sucesso!")
+                    logging.warning("Atualização concluída com sucesso!")
                 else:
-                    print(f"Versão {versao} não encontrada.")
+                    logging.warning(f"Versão {versao} não encontrada.")
             else:
-                print("Atualização cancelada pelo usuário.")
+                logging.info("Atualização cancelada pelo usuário.")
 
+            logging.info("processo concluído com sucesso!")
             fim = time.time()
             duracao = fim - inicio
-            print(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
+            logging.info(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
             break
 
         elif opcao == "3":
-            print("Você selecionou: Base Limpa Poupaqui")
+            logging.info("Você selecionou: Base Limpa Poupaqui")
             
             inicio = time.time()
             destino = codigoDestino()
             origem = codigoOrigem()
-            print(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
+            logging.info(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
             if not continuar():
                 return
 
@@ -216,11 +230,11 @@ def exibir_menu():
 
             # Verificar se a conexão foi bem-sucedida
             if not conn_chinchila:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
             
             if not conn_postgres:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
 
             # Instanciar a classe que cuida da base limpa
@@ -237,12 +251,12 @@ def exibir_menu():
             arquivo_gerado = fazerBackup.fazendoBackup(db_name)
 
             if not arquivo_gerado:
-                print("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
+                logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
                 return
             
             fazerBackup.conferirMd5sum(arquivo_gerado)
 
-            print(f"Iniciando a transferencia para o Servidor de destino {destino}")
+            logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
             transfeBackup = Transfer()
             transfeBackup.baseTransfer(destino, arquivo_gerado)
 
@@ -261,30 +275,30 @@ def exibir_menu():
                 nome_arquivo = at_versao.obter_nome_arquivo(versao)
 
                 if nome_arquivo:
-                    print(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
+                    logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
                     
                     sshComandos.executarComando(destino, senha, 
                         "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
                     sshComandos.executarComando(destino, senha, 
                         f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
-                    print("Atualização concluída com sucesso!")
+                    logging.info("Atualização concluída com sucesso!")
                 else:
-                    print(f"Versão {versao} não encontrada.")
+                    logging.warning(f"Versão {versao} não encontrada.")
             else:
-                print("Atualização cancelada pelo usuário.")
+                logging.info("Atualização cancelada pelo usuário.")
 
             fim = time.time()
             duracao = fim - inicio
-            print(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
+            logging.info(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
             break
 
         elif opcao == "4":
 
             inicio = time.time()
-            print("Você selecionou: Base Limpa Poupaqui Produtos Ativo/Inativos")
+            logging.info("Você selecionou: Base Limpa Poupaqui Produtos Ativo/Inativos")
             destino = codigoDestino()
             origem = codigoOrigem()
-            print(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
+            logging.info(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
             if not continuar():
                 return
 
@@ -296,11 +310,11 @@ def exibir_menu():
 
             # Verificar se a conexão foi bem-sucedida
             if not conn_chinchila:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
             
             if not conn_postgres:
-                print("Erro na conexão com a base de destino.")
+                logging.error("Erro na conexão com a base de destino.")
                 return
 
             # Instanciar a classe que cuida da base limpa
@@ -317,12 +331,12 @@ def exibir_menu():
             arquivo_gerado = fazerBackup.fazendoBackup(db_name)
 
             if not arquivo_gerado:
-                print("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
+                logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
                 return
             
             fazerBackup.conferirMd5sum(arquivo_gerado)
 
-            print(f"Iniciando a transferencia para o Servidor de destino {destino}")
+            logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
             transfeBackup = Transfer()
             transfeBackup.baseTransfer(destino, arquivo_gerado)
 
@@ -341,29 +355,29 @@ def exibir_menu():
                 nome_arquivo = at_versao.obter_nome_arquivo(versao)
 
                 if nome_arquivo:
-                    print(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
+                    logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
                     
                     sshComandos.executarComando(destino, senha, 
                         "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
                     sshComandos.executarComando(destino, senha, 
                         f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
-                    print("Atualização concluída com sucesso!")
+                    logging.info("Atualização concluída com sucesso!")
                 else:
-                    print(f"Versão {versao} não encontrada.")
+                    logging.warning(f"Versão {versao} não encontrada.")
             else:
-                print("Atualização cancelada pelo usuário.")
+                logging.warning("Atualização cancelada pelo usuário.")
 
             fim = time.time()
             duracao = fim - inicio
-            print(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
+            logging.info(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
             break
         
         elif opcao == "5":
-            print("Saindo")
+            logging.info("Saindo")
             break
 
         else:
-            print("Opção inválida. Tente novamente.")
+            logging.info("Opção inválida. Tente novamente.")
 
 def codigoDestino():
     return input("Digite o codigo de destino: ")
@@ -376,13 +390,13 @@ def continuar():
         seguir = input("\033[96mValide as informações e deseja prosseguir? (S/N): \033[0m").strip().lower()
 
         if seguir == 's':
-            print("Continuando...")
+            logging.info("Continuando...")
             return True
         elif seguir == 'n':
-            print("Operação cancelada.")
+            logging.info("Operação cancelada.")
             return False
         else:
-            print("Opção inválida. Digite apenas S ou N.")
+            logging.info("Opção inválida. Digite apenas S ou N.")
 
 # Executa o menu
 exibir_menu()
