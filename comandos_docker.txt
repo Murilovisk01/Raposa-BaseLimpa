@@ -1,0 +1,103 @@
+
+=========================
+COLA DE COMANDOS DOCKER
+=========================
+
+# 1. Informações do Docker
+docker --version
+    → Mostra a versão instalada do Docker.
+
+docker info
+    → Exibe informações detalhadas sobre o Docker, containers e imagens.
+
+# 2. Imagens
+docker pull <imagem>
+    → Baixa uma imagem do Docker Hub.
+
+docker images
+    → Lista todas as imagens disponíveis localmente.
+
+docker rmi <imagem>
+    → Remove uma imagem local.
+
+# 3. Containers
+docker ps
+    → Lista containers em execução.
+
+docker ps -a
+    → Lista todos os containers (ativos e parados).
+
+docker run <opções> --name <nome_do_container> <imagem> 
+    → Cria e inicia um novo container a partir de uma imagem.
+
+docker run -d --name <nome_do_container> <imagem>
+    → Cria e inicia um novo container a partir de uma imagem em background    
+
+docker run -d -p 80:80 --name <nome_do_container> <imagem>
+    → Cria e inicia um novo container a partir de uma imagem em background e seta a porta
+
+docker start <container>
+    → Inicia um container parado.
+
+docker stop <container>
+    → Para um container em execução.
+
+docker restart <container>
+    → Reinicia um container.
+
+docker rm <container>
+    → Remove um container parado.
+
+docker exec -it <container> <comando>
+    → Executa um comando dentro de um container ativo.
+
+docker logs <container>
+    → Exibe os logs do container.
+
+# 4. Volumes e Dados
+docker volume ls
+    → Lista os volumes existentes.
+
+docker volume rm <volume>
+    → Remove um volume.
+
+docker run -v <caminho_local>:<caminho_container> <imagem>
+    → Monta um volume no container.
+
+# 5. Rede
+docker network ls
+    → Lista as redes disponíveis.
+
+docker network create <nome_rede>
+    → Cria uma nova rede.
+
+docker network connect <rede> <container>
+    → Conecta um container a uma rede.
+
+docker network disconnect <rede> <container>
+    → Desconecta um container de uma rede.
+
+# 6. Docker Compose (se instalado)
+docker compose up
+    → Sobe todos os serviços definidos no docker-compose.yml.
+
+docker compose down
+    → Para e remove os containers definidos no docker-compose.yml.
+
+docker compose logs
+    → Mostra logs dos serviços.
+
+# 7. Limpeza de Recursos
+docker system prune
+    → Remove containers, imagens e redes não utilizados.
+
+docker system prune -a
+    → Remove tudo que não está em uso, incluindo imagens não utilizadas.
+
+docker image prune
+    → Remove imagens não utilizadas.
+
+docker container prune
+    → Remove containers parados.
+
+=========================
