@@ -4,6 +4,9 @@ from ferramentas import aplicar_semente_update_codigo, atualizacaoServidor, exec
 from transferBackup import Backup, Transfer
 import time
 import logging
+import pyfiglet
+import logging
+import time
 import shlex
 
 # Configuração do logging
@@ -17,6 +20,13 @@ console.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
 console.setFormatter(formatter)
 logging.getLogger().addHandler(console)
+
+# já existe logging configurado, pode deixar como está
+# só adiciona a função do banner
+def banner():
+    texto = "BEM VINDO AO RAPOSA BASE LIMPA"
+    ascii_banner = pyfiglet.figlet_format(texto, font="slant")  
+    print("\033[32m" + ascii_banner + "\033[0m")  # cor ciano
 
 def exibir_menu():
     while True:
@@ -120,6 +130,7 @@ def exibir_menu():
             fim = time.time()
             duracao = fim - inicio
             print(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
+            logging.info("processo concluído com sucesso!")
             break
 
         elif opcao == "2":
@@ -428,4 +439,5 @@ def continuar():
             logging.info("Opção inválida. Digite apenas S ou N.")
 
 # Executa o menu
+banner()
 exibir_menu()

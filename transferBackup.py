@@ -11,6 +11,8 @@ class Backup:
         config = carregar_configuracoes('config.ini')
         porta_pg = config['Database']['porta_pg']
         caminho_backup = config['Database']['caminho_backup']
+        host_pg = config['Database']['host_pg']
+        caminho_pg_dump = config['Database']['caminho_pg_dump']
 
         # Montar caminho completo do arquivo de backup
         caminho = os.path.join(caminho_backup, f"{destino}.backup")
@@ -19,8 +21,8 @@ class Backup:
         try:
             subprocess.run(
                 [
-                    '/usr/lib/postgresql/14/bin/pg_dump',
-                    '-h', 'localhost',
+                    caminho_pg_dump,
+                    '-h', host_pg,
                     '-p', porta_pg,
                     '-U', 'chinchila',
                     '-F', 'c',

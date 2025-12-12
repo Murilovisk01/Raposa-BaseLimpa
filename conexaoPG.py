@@ -13,6 +13,7 @@ class Postgres:
     def criar_base_oficial(self, base_nome):
         config = carregar_configuracoes('config.ini')
         porta_pg = config['Database']['porta_pg']
+        host_pg = config['Database']['host_pg']
         
         try:
             logging.info("Função de Criação da Base Oficial")
@@ -23,7 +24,7 @@ class Postgres:
             nome_final = f"{base_nome}_baseLimpa_{data_atual}_{codigo_random}"
 
             connection_params = {
-                "host": "localhost",
+                "host": host_pg,
                 "database": "postgres",
                 "user": "postgres",
                 "password": "supertux",
@@ -63,13 +64,14 @@ class Postgres:
     def conexaoBaseOficialChinchila(self,base_nome):
         config = carregar_configuracoes('config.ini')
         porta_pg = config['Database']['porta_pg']
+        host_pg = config['Database']['host_pg']
         try:
             # Formatar o nome da base de dados
             db_name_oficial = f"{base_nome}"
 
             # Configurações de conexão
             conn_params = {
-                "host": "localhost",
+                "host": host_pg,
                 "database": db_name_oficial,
                 "user": "chinchila",
                 "password": "chinchila",
@@ -87,13 +89,14 @@ class Postgres:
     def conexaoBaseOficialPostgres(self,base_nome):
         config = carregar_configuracoes('config.ini')
         porta_pg = config['Database']['porta_pg']
+        host_pg = config['Database']['host_pg']
         try:
             # Formatar o nome da base de dados
             db_name_oficial = f"{base_nome}"
 
             # Configurações de conexão
             conn_params = {
-                "host": "localhost",
+                "host": host_pg,
                 "database": db_name_oficial,
                 "user": "postgres",
                 "password": "supertux",
