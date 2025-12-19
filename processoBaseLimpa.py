@@ -4,7 +4,7 @@ from tkinter import END
 import psycopg2
 import pandas as pd
 from tabulate import tabulate
-from conexaoSSH import ConexaoSSH
+from Conexao.conexaoSSH import ConexaoSSH
 from config import carregar_configuracoes
 import logging
 

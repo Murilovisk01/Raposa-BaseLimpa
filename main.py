@@ -1,4 +1,4 @@
-from conexaoPG import Postgres
+from Conexao.conexaoPG import Postgres
 from processoBaseLimpa import importacaoBaseLimpa
 from ferramentas import aplicar_semente_update_codigo, atualizacaoServidor, executarComando
 from transferBackup import Backup, Transfer
