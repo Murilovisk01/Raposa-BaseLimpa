@@ -1,6 +1,7 @@
 from Conexao.conexaoPG import Postgres
 from processoBaseLimpa import importacaoBaseLimpa
 from ferramentas import aplicar_semente_update_codigo, atualizacaoServidor, executarComando
+from processoBrava import importacaoBrava
 from transferBackup import Backup, Transfer
 import time
 import logging
@@ -82,49 +83,67 @@ def exibir_menu():
             if not continuar():
                 return
 
-            fazerBackup = Backup()
-            arquivo_gerado = fazerBackup.fazendoBackup(db_name)
+            #testeeee
+            logging.info("Teste de execução")
+            processo_brava = importacaoBrava()
+            colunas = processo_brava.get_colunas_names(conn_chinchila)
+            if colunas:
+                # 2. Acessa cada tabela individualmente
+                # Você pode usar os nomes exatos das tabelas como chaves
+                cols_fidelidade = colunas.get('fidelidadeclassificacao')
+                cols_crediario = colunas.get('crediario')
+                cols_item_oferta = colunas.get('itemcadernooferta')
 
-            if not arquivo_gerado:
-                logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
-                return
-            
-            fazerBackup.conferirMd5sum(arquivo_gerado)
-
-            logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
-            transfeBackup = Transfer()
-            transfeBackup.baseTransfer(destino, arquivo_gerado)
-
-            sshComandos = executarComando()
-            senha = 'supertux'
-            sshComandos.executarComando(destino,senha,"sudo service wildfly stop")
-            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && wget http://a7.net.br/scherrer/restaurar_base2.sh")
-            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && chmod a+x restaurar_base2.sh;")
-            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && bash restaurar_base2.sh;")
-
-            confirmar = input("Iniciando a atualização do servidor. Deseja continuar? (s/n): ").strip().lower()
-
-            if confirmar == "s":
-                versao = input("Qual versão deseja atualizar?: ")
-                at_versao = atualizacaoServidor()
-                nome_arquivo = at_versao.obter_nome_arquivo(versao)
-
-                if nome_arquivo:
-                    logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
-                    
-                    sshComandos.executarComando(destino, senha, 
-                        "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
-                    sshComandos.executarComando(destino, senha, 
-                        f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
-                    logging.info("Atualização concluída com sucesso!")
-                else:
-                    logging.warning(f"Versão {versao} não encontrada.")
+                # Agora você tem variáveis independentes para usar nos seus INSERTs ou CREATEs
+                print(f"Colunas para o Fidelidade: {cols_fidelidade}")
+                print(f"Colunas para o Crediário: {cols_crediario}")
+                print(f"Colunas para o itemOferta: {cols_item_oferta}")
             else:
-                logging.warning("Atualização cancelada pelo usuário.")
-                logging.info("Continuando o processo")
+                print("Não foi possível obter as colunas.")
 
-            sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
-            sshComandos.executarComando(destino,senha,"sudo service wildfly start")
+            # fazerBackup = Backup()
+            # arquivo_gerado = fazerBackup.fazendoBackup(db_name)
+
+            # if not arquivo_gerado:
+            #     logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
+            #     return
+            
+            # fazerBackup.conferirMd5sum(arquivo_gerado)
+
+            # logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
+            # transfeBackup = Transfer()
+            # transfeBackup.baseTransfer(destino, arquivo_gerado)
+
+            # sshComandos = executarComando()
+            # senha = 'supertux'
+            # sshComandos.executarComando(destino,senha,"sudo service wildfly stop")
+            # sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && wget http://a7.net.br/scherrer/restaurar_base2.sh")
+            # sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && chmod a+x restaurar_base2.sh;")
+            # sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && bash restaurar_base2.sh;")
+
+            # confirmar = input("Iniciando a atualização do servidor. Deseja continuar? (s/n): ").strip().lower()
+
+            # if confirmar == "s":
+            #     versao = input("Qual versão deseja atualizar?: ")
+            #     at_versao = atualizacaoServidor()
+            #     nome_arquivo = at_versao.obter_nome_arquivo(versao)
+
+            #     if nome_arquivo:
+            #         logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
+                    
+            #         sshComandos.executarComando(destino, senha, 
+            #             "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
+            #         sshComandos.executarComando(destino, senha, 
+            #             f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
+            #         logging.info("Atualização concluída com sucesso!")
+            #     else:
+            #         logging.warning(f"Versão {versao} não encontrada.")
+            # else:
+            #     logging.warning("Atualização cancelada pelo usuário.")
+            #     logging.info("Continuando o processo")
+
+            # sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
+            # sshComandos.executarComando(destino,senha,"sudo service wildfly start")
 
             logging.info("processo concluído com sucesso!")
             fim = time.time()

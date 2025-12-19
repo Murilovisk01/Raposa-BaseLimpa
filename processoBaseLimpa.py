@@ -307,8 +307,9 @@ class importacaoBaseLimpa:
                     source_cursor.execute(queries['query_proxima_semente'])
                     semente = source_cursor.fetchone()[0]
                     logging.info(f"Próxima semente que deve ser rodada: {semente}")
-                    source_conn.commit()
 
+                    source_cursor.execute("SELECT dblink_disconnect('conexao_baseorigem');")
+                    source_conn.commit()
         except psycopg2.Error as e:
             logging.info(f"Ocorreu um erro: {e}")
 
@@ -455,6 +456,7 @@ class importacaoBaseLimpa:
                     semente = source_cursor.fetchone()[0]
                     logging.info(f"Próxima semente que deve ser rodada: {semente}")
 
+                    source_cursor.execute("SELECT dblink_disconnect('conexao_baseorigem');")
                     source_conn.commit()
 
         except psycopg2.Error as e:
