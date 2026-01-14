@@ -37,7 +37,8 @@ def exibir_menu():
         logging.info("2 - Base Limpa Padrão Produtos Ativo/Inativos")
         logging.info("3 - Base Limpa Poupaqui")
         logging.info("4 - Base Limpa Poupaqui Produtos Ativo/Inativos")
-        logging.info("5 - Exit")
+        logging.info("5 - Base Limpa Padrão - Brava")
+        logging.info("6 - Exit")
 
         opcao = input("Digite o número da opção desejada: ")
 
@@ -83,67 +84,49 @@ def exibir_menu():
             if not continuar():
                 return
 
-            #testeeee
-            logging.info("Teste de execução")
-            processo_brava = importacaoBrava()
-            colunas = processo_brava.get_colunas_names(conn_chinchila)
-            if colunas:
-                # 2. Acessa cada tabela individualmente
-                # Você pode usar os nomes exatos das tabelas como chaves
-                cols_fidelidade = colunas.get('fidelidadeclassificacao')
-                cols_crediario = colunas.get('crediario')
-                cols_item_oferta = colunas.get('itemcadernooferta')
+            fazerBackup = Backup()
+            arquivo_gerado = fazerBackup.fazendoBackup(db_name)
 
-                # Agora você tem variáveis independentes para usar nos seus INSERTs ou CREATEs
-                print(f"Colunas para o Fidelidade: {cols_fidelidade}")
-                print(f"Colunas para o Crediário: {cols_crediario}")
-                print(f"Colunas para o itemOferta: {cols_item_oferta}")
-            else:
-                print("Não foi possível obter as colunas.")
-
-            # fazerBackup = Backup()
-            # arquivo_gerado = fazerBackup.fazendoBackup(db_name)
-
-            # if not arquivo_gerado:
-            #     logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
-            #     return
+            if not arquivo_gerado:
+                logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
+                return
             
-            # fazerBackup.conferirMd5sum(arquivo_gerado)
+            fazerBackup.conferirMd5sum(arquivo_gerado)
 
-            # logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
-            # transfeBackup = Transfer()
-            # transfeBackup.baseTransfer(destino, arquivo_gerado)
+            logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
+            transfeBackup = Transfer()
+            transfeBackup.baseTransfer(destino, arquivo_gerado)
 
-            # sshComandos = executarComando()
-            # senha = 'supertux'
-            # sshComandos.executarComando(destino,senha,"sudo service wildfly stop")
-            # sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && wget http://a7.net.br/scherrer/restaurar_base2.sh")
-            # sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && chmod a+x restaurar_base2.sh;")
-            # sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && bash restaurar_base2.sh;")
+            sshComandos = executarComando()
+            senha = 'supertux'
+            sshComandos.executarComando(destino,senha,"sudo service wildfly stop")
+            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && wget http://a7.net.br/scherrer/restaurar_base2.sh")
+            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && chmod a+x restaurar_base2.sh;")
+            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && bash restaurar_base2.sh;")
 
-            # confirmar = input("Iniciando a atualização do servidor. Deseja continuar? (s/n): ").strip().lower()
+            confirmar = input("Iniciando a atualização do servidor. Deseja continuar? (s/n): ").strip().lower()
 
-            # if confirmar == "s":
-            #     versao = input("Qual versão deseja atualizar?: ")
-            #     at_versao = atualizacaoServidor()
-            #     nome_arquivo = at_versao.obter_nome_arquivo(versao)
+            if confirmar == "s":
+                versao = input("Qual versão deseja atualizar?: ")
+                at_versao = atualizacaoServidor()
+                nome_arquivo = at_versao.obter_nome_arquivo(versao)
 
-            #     if nome_arquivo:
-            #         logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
+                if nome_arquivo:
+                    logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
                     
-            #         sshComandos.executarComando(destino, senha, 
-            #             "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
-            #         sshComandos.executarComando(destino, senha, 
-            #             f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
-            #         logging.info("Atualização concluída com sucesso!")
-            #     else:
-            #         logging.warning(f"Versão {versao} não encontrada.")
-            # else:
-            #     logging.warning("Atualização cancelada pelo usuário.")
-            #     logging.info("Continuando o processo")
+                    sshComandos.executarComando(destino, senha, 
+                        "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
+                    sshComandos.executarComando(destino, senha, 
+                        f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
+                    logging.info("Atualização concluída com sucesso!")
+                else:
+                    logging.warning(f"Versão {versao} não encontrada.")
+            else:
+                logging.warning("Atualização cancelada pelo usuário.")
+                logging.info("Continuando o processo")
 
-            # sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
-            # sshComandos.executarComando(destino,senha,"sudo service wildfly start")
+            sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
+            sshComandos.executarComando(destino,senha,"sudo service wildfly start")
 
             logging.info("processo concluído com sucesso!")
             fim = time.time()
@@ -432,6 +415,124 @@ def exibir_menu():
             break
         
         elif opcao == "5":
+            
+            inicio = time.time()
+            logging.info("Você selecionou: Base Limpa Padrão - Brava")
+            destino = codigoDestino()
+            origem = codigoOrigem()
+            logging.info(f"Base de Origem : {origem}  |  Base de Destino: {destino}")
+            if not continuar():
+                return
+
+            # Instanciar o objeto de conexão e criar a base
+            base_oficial = Postgres()
+            db_name = base_oficial.criar_base_oficial(destino)
+            conn_chinchila = base_oficial.conexaoBaseOficialChinchila(db_name)
+            conn_postgres = base_oficial.conexaoBaseOficialPostgres(db_name)
+
+            # Verificar se a conexão foi bem-sucedida
+            if not conn_chinchila:
+                logging.error("Erro na conexão com a base de destino.")
+                return
+            
+            if not conn_postgres:
+                logging.error("Erro na conexão com a base de destino.")
+                return
+
+            # Instanciar a classe que cuida da base limpa
+            base_limpa = importacaoBaseLimpa()
+            opcao_script = "baseLimpaPadraoProdutosInativos" 
+
+            # Executar a população da base limpa
+            base_limpa.baseLimpaPadrao(conn_chinchila,conn_postgres, opcao_script, origem)
+            
+            if not continuar():
+                return
+
+            #testeeee
+            logging.info("Teste de execução")
+            processo_brava = importacaoBrava()
+            colunas = processo_brava.get_colunas_names(conn_chinchila)
+            if colunas:
+                # 2. Acessa cada tabela individualmente
+                # Você pode usar os nomes exatos das tabelas como chaves
+                cols_fidelidade = colunas.get('fidelidadeclassificacao')
+                cols_crediario = colunas.get('crediario')
+                cols_cadernooferta = colunas.get('cadernooferta')
+                cols_item_oferta = colunas.get('itemcadernooferta')
+                cols_planoremuneracao = colunas.get('planoremuneracao')
+            else:
+                print("Não foi possível obter as colunas.")
+
+            processo_brava.get_ids_brava(conn_chinchila)
+
+            get_id_crediario = input("Qual o ID do Crediário que deseja importar? ")
+            get_id_cadernooferta = input("Qual o ID do Caderno de Oferta que deseja importar? ")
+            get_id_loja = input("Qual o ID da Loja que deseja importar? ")
+            processo_brava.processo_importacao(conn_chinchila,get_id_crediario,get_id_cadernooferta,get_id_loja,cols_fidelidade,cols_crediario,cols_item_oferta,cols_cadernooferta,cols_planoremuneracao)
+            
+            # Atualizando a semente no cliente, precisa prestar atenção para que coloque a versão certa
+            logging.info("Atualizando a Semente")
+
+            semente = input("Qual a semente que devemos rodar: ")
+
+            semente_codigo = aplicar_semente_update_codigo()
+            semente_codigo.aplicar_semente_e_codigo(conn_chinchila, semente, destino)
+            
+            if not continuar():
+                return
+
+            fazerBackup = Backup()
+            arquivo_gerado = fazerBackup.fazendoBackup(db_name)
+
+            if not arquivo_gerado:
+                logging.error("\033[91m✖ Backup falhou. A transferência será ignorada.\033[0m")
+                return
+            
+            fazerBackup.conferirMd5sum(arquivo_gerado)
+
+            logging.info(f"Iniciando a transferencia para o Servidor de destino {destino}")
+            transfeBackup = Transfer()
+            transfeBackup.baseTransfer(destino, arquivo_gerado)
+
+            sshComandos = executarComando()
+            senha = 'supertux'
+            sshComandos.executarComando(destino,senha,"sudo service wildfly stop")
+            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && wget http://a7.net.br/scherrer/restaurar_base2.sh")
+            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && chmod a+x restaurar_base2.sh;")
+            sshComandos.executarComando(destino,senha,"cd /home/alpha7/shared && bash restaurar_base2.sh;")
+
+            confirmar = input("Iniciando a atualização do servidor. Deseja continuar? (s/n): ").strip().lower()
+
+            if confirmar == "s":
+                versao = input("Qual versão deseja atualizar?: ")
+                at_versao = atualizacaoServidor()
+                nome_arquivo = at_versao.obter_nome_arquivo(versao)
+
+                if nome_arquivo:
+                    logging.info(f"Nome do arquivo para versão {versao}: {nome_arquivo}")
+                    
+                    sshComandos.executarComando(destino, senha, 
+                        "cd /home/alpha7/shared && wget a7.net.br/scherrer/aplicarAtualizacao.sh;")
+                    sshComandos.executarComando(destino, senha, 
+                        f"cd /home/alpha7/shared && bash aplicarAtualizacao.sh {nome_arquivo};")
+                    logging.warning("Atualização concluída com sucesso!")
+                else:
+                    logging.warning(f"Versão {versao} não encontrada.")
+            else:
+                logging.info("Atualização cancelada pelo usuário.")
+                logging.info("Continuando o processo")
+
+            sshComandos.executarComando(destino,senha,"sudo vim /etc/wildfly.conf")
+            sshComandos.executarComando(destino,senha,"sudo service wildfly start")
+
+            logging.info("processo concluído com sucesso!")
+            fim = time.time()
+            duracao = fim - inicio
+            logging.info(f"\033[96mTempo de execução: {duracao:.2f} segundos\033[0m")
+            break
+
+        elif opcao == "6":
             logging.info("Saindo")
             break
 
