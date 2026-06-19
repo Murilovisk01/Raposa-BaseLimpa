@@ -1,6 +1,5 @@
 import importlib
 import sys
-from tkinter import END
 import psycopg2
 import pandas as pd
 from tabulate import tabulate

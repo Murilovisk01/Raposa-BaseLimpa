@@ -75,7 +75,8 @@ class Postgres:
                 "database": db_name_oficial,
                 "user": "chinchila",
                 "password": "chinchila",
-                "port": porta_pg
+                "port": porta_pg,
+                "sslmode": "require"
             }
 
             # Estabelecer a conexão com o banco de dados
@@ -100,7 +101,8 @@ class Postgres:
                 "database": db_name_oficial,
                 "user": "postgres",
                 "password": "supertux",
-                "port": porta_pg
+                "port": porta_pg,
+                "sslmode": "require"
             }
 
             # Estabelecer a conexão com o banco de dados

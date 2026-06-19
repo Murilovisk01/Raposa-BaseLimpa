@@ -110,38 +110,6 @@ values ('||generate_id()||','''''||nome||''''','||minparcela||','||maxparcela||'
 '''''||tipointervaloparcela||''''','||intervaloparcela||','''''||tipopagamento||''''')'');'
 FROM planoremuneracaobrava"""
 
-planopagamento_brava_2 = """
---BASE LIMPA 
-WITH planoremuneracaobrava AS (
-SELECT
-  *
-FROM dblink('conexao_baseorigem', '
- SELECT 
-  planopagamento.id,
-  planopagamento.nome,
-  planopagamento.minparcela,
-  planopagamento.maxparcela,
-  planopagamento.tipointervaloentrada,
-  planopagamento.intervaloentrada,
-  planopagamento.tipointervaloparcela,
-  planopagamento.intervaloparcela,
-  planopagamento.tipopagamento,
-  fechamentoplanopagamento.diafechamento,
-  fechamentoplanopagamento.diavencimento 
-FROM planopagamento
-LEFT JOIN fechamentoplanopagamento ON fechamentoplanopagamento.planopagamentoid = planopagamento.id
-JOIN crediario ON crediario.planopagamentoid = planopagamento.id
-WHERE crediario.id in ({ids})  --ID DO CREDIARIO ESCOLHIDO PELO CLIENTE 
-') AS DATA (id BIGINT, nome VARCHAR, minparcela INTEGER, maxparcela INTEGER, tipointervaloentrada VARCHAR, intervaloentrada INTEGER,
-tipointervaloparcela VARCHAR,intervaloparcela VARCHAR,tipopagamento VARCHAR, diafechamento INTEGER, diavencimento INTEGER)
-)
-SELECT 
-'select nq(''insert into planopagamento (id,nome,minparcela,maxparcela,tipointervaloentrada,intervaloentrada,tipointervaloparcela,intervaloparcela,tipopagamento ) 
-values ('||generate_id()||','''''||nome||''''','||minparcela||','||maxparcela||','''''||tipointervaloentrada||''''','||intervaloentrada||',
-'''''||tipointervaloparcela||''''','||intervaloparcela||','''''||tipopagamento||''''')'');'
-FROM planoremuneracaobrava
-"""
-
 crediario_brava = """
 --CREDIARIO INSERT
 WITH crediario_brava AS (
@@ -155,28 +123,7 @@ FROM
   crediario
   join planopagamento on planopagamento.id = crediario.planopagamentoid
   where crediario.id in ({ids})  -- ID DO CREDIARIO ESCOLHIDO PELO CLIENTE 
-') AS DATA (id bigint, status varchar, nome varchar, limitepadraocliente numeric (15,4), tabelarestricoesid bigint, pessoaid bigint, mensagemvenda varchar, planopagamentoid bigint, taxajuros numeric (15,4), taxamulta numeric (15,4), taxaconvenio numeric (15,4), toleranciaatraso integer, tipo varchar, recebimentominimo integer, autorizacao varchar, exigirsenhaoubiometriacliente boolean, toleranciajuros integer, toleranciamulta integer, layoutexportacao varchar, layoutimportacaocliente varchar, regrafaturamentoid bigint, comprovanteimprimirviaparcela boolean, comprovanteimprimiritemvenda boolean, comprovanteporcentagemtitular numeric (15,4), comprovanteporcentagemdependente numeric (15,4), desconsiderarcompra boolean, numerocartaoexportacaounico boolean, codigoexportacao varchar, tabelarestricoestrocaid bigint, usuariowebconvenios varchar, senhawebconvenios varchar, tipocalculolimite varchar, cadernoofertaid bigint, codigoimportacao varchar, bloquearbuscamanual boolean, integracaocontabilcodigo varchar, emitecartaointerno boolean, comprovanteimprimirsaldorestante boolean, layoutexportacaoarquivoid bigint, plataformatef varchar,planoid VARCHAR)
-)SELECT 
-   'select nq(''insert into crediario(id,status,nome,limitepadraocliente,planopagamentoid,taxajuros,taxamulta,taxaconvenio,toleranciaatraso,tipo,recebimentominimo,autorizacao,toleranciajuros,toleranciamulta,layoutexportacao,layoutimportacaocliente,comprovanteimprimirviaparcela,comprovanteimprimiritemvenda,desconsiderarcompra,numerocartaoexportacaounico,tipocalculolimite,bloquearbuscamanual,emitecartaointerno,comprovanteimprimirsaldorestante) 
-   values('||generate_id()||','''''||STATUS||''''','''''||crediario_brava.nome||''''','||limitepadraocliente||','||planopagamento.id||','||taxajuros||','||taxamulta||','||taxaconvenio||','||toleranciaatraso||','''''||tipo||''''','||recebimentominimo||','''''||autorizacao||''''','||toleranciajuros||','||toleranciamulta||','''''||layoutexportacao||''''','''''||layoutimportacaocliente||''''','||comprovanteimprimirviaparcela||','||comprovanteimprimiritemvenda||','||desconsiderarcompra||','||numerocartaoexportacaounico||','''''||tipocalculolimite||''''','||bloquearbuscamanual||','||emitecartaointerno||','||comprovanteimprimirsaldorestante||')'');'
-FROM crediario_brava
-JOIN planopagamento ON planopagamento.nome = crediario_brava.planoid
-"""
-
-crediario_brava_2= """
---CREDIARIO INSERT
-WITH crediario_brava AS (
-SELECT
-  *
-FROM dblink('conexao_baseorigem', '
-SELECT 
-crediario.*,
-planopagamento.nome as planoid
-FROM 
-  crediario
-  join planopagamento on planopagamento.id = crediario.planopagamentoid
-  where crediario.id in ({ids})  -- ID DO CREDIARIO ESCOLHIDO PELO CLIENTE 
-') AS DATA (id bigint, status varchar, nome varchar, limitepadraocliente numeric (15,4), tabelarestricoesid bigint, pessoaid bigint, mensagemvenda varchar, planopagamentoid bigint, taxajuros numeric (15,4), taxamulta numeric (15,4), taxaconvenio numeric (15,4), toleranciaatraso integer, tipo varchar, recebimentominimo integer, autorizacao varchar, exigirsenhaoubiometriacliente boolean, toleranciajuros integer, toleranciamulta integer, layoutexportacao varchar, layoutimportacaocliente varchar, regrafaturamentoid bigint, comprovanteimprimirviaparcela boolean, comprovanteimprimiritemvenda boolean, comprovanteporcentagemtitular numeric (15,4), comprovanteporcentagemdependente numeric (15,4), desconsiderarcompra boolean, numerocartaoexportacaounico boolean, codigoexportacao varchar, tabelarestricoestrocaid bigint, usuariowebconvenios varchar, senhawebconvenios varchar, tipocalculolimite varchar, cadernoofertaid bigint, codigoimportacao varchar, bloquearbuscamanual boolean, integracaocontabilcodigo varchar, emitecartaointerno boolean, comprovanteimprimirsaldorestante boolean, layoutexportacaoarquivoid bigint, plataformatef varchar,planoid VARCHAR)
+') AS DATA ({colunas},planoid VARCHAR)
 )SELECT 
    'select nq(''insert into crediario(id,status,nome,limitepadraocliente,planopagamentoid,taxajuros,taxamulta,taxaconvenio,toleranciaatraso,tipo,recebimentominimo,autorizacao,toleranciajuros,toleranciamulta,layoutexportacao,layoutimportacaocliente,comprovanteimprimirviaparcela,comprovanteimprimiritemvenda,desconsiderarcompra,numerocartaoexportacaounico,tipocalculolimite,bloquearbuscamanual,emitecartaointerno,comprovanteimprimirsaldorestante) 
    values('||generate_id()||','''''||STATUS||''''','''''||crediario_brava.nome||''''','||limitepadraocliente||','||planopagamento.id||','||taxajuros||','||taxamulta||','||taxaconvenio||','||toleranciaatraso||','''''||tipo||''''','||recebimentominimo||','''''||autorizacao||''''','||toleranciajuros||','||toleranciamulta||','''''||layoutexportacao||''''','''''||layoutimportacaocliente||''''','||comprovanteimprimirviaparcela||','||comprovanteimprimiritemvenda||','||desconsiderarcompra||','||numerocartaoexportacaounico||','''''||tipocalculolimite||''''','||bloquearbuscamanual||','||emitecartaointerno||','||comprovanteimprimirsaldorestante||')'');'
@@ -196,28 +143,7 @@ FROM
   cadernooferta 
 WHERE 
   id in ({ids})
-') AS DATA (id bigint, status varchar, nome varchar, datahorainicial timestamp, datahorafinal timestamp, origem varchar, codigointegracao varchar, intervalotempo varchar, diasemanasegunda boolean, diasemanaterca boolean, diasemanaquarta boolean, diasemanaquinta boolean, diasemanasexta boolean, diasemanasabado boolean, diasemanadomingo boolean, diasemanaordinalnumero varchar, diasemanaordinaldiasemana varchar, diasmes varchar, crmrequerpessoavenda boolean, crmrequercpfcnpj boolean, crmrequercelular boolean, crmrequeremail boolean, crmrequercelulartelefone boolean, crmrequerdatanascimento boolean, crmrequerendereco boolean, crmapenasprimeiravendapessoa varchar, crmapenasentrega boolean, formapagamentoaceita varchar, restringedescontomanual boolean, restringedemaisofertas boolean, crmapenasgrupoconsumidor boolean, validoapenasprevencido boolean, diasparavencimento integer, validoapenascupomdesconto boolean)
-)
-SELECT
-'select nq (''insert into cadernooferta (id,status,nome,origem,intervalotempo,diasemanasegunda,diasemanaterca,diasemanaquarta,diasemanaquinta,diasemanasexta,diasemanasabado,diasemanadomingo,diasemanaordinalnumero,diasemanaordinaldiasemana,crmrequerpessoavenda,crmrequercpfcnpj,crmrequercelular,crmrequeremail,crmrequercelulartelefone,crmrequerdatanascimento,crmrequerendereco,crmapenasprimeiravendapessoa,crmapenasentrega,formapagamentoaceita,restringedescontomanual,restringedemaisofertas,crmapenasgrupoconsumidor,validoapenasprevencido)
-values('||generate_id()||','''''||STATUS||''''','''''||nome||''''','''''||origem||''''','''''||intervalotempo||''''','||diasemanasegunda||','||diasemanaterca||','||diasemanaquarta||','||diasemanaquinta||','||diasemanasexta||','||diasemanasabado||','||diasemanadomingo||','''''||diasemanaordinalnumero||''''',
-'''''||diasemanaordinaldiasemana||''''','||crmrequerpessoavenda||','||crmrequercpfcnpj||','||crmrequercelular||','||crmrequeremail||','||crmrequercelulartelefone||','||crmrequerdatanascimento||','||crmrequerendereco||','''''||crmapenasprimeiravendapessoa||''''','||crmapenasentrega||','''''||formapagamentoaceita||''''','||restringedescontomanual||','||restringedemaisofertas||','||crmapenasgrupoconsumidor||','||validoapenasprevencido||')'');'
-FROM cadernooferta_brava
-"""
-
-cadernooferta_brava_2 = """
--- INSERT CADERNO DE OFERTA
-WITH cadernooferta_brava AS (
-SELECT
-  *
-FROM dblink('conexao_baseorigem', '
-SELECT 
-	*
-FROM 
-  cadernooferta 
-WHERE 
-  id in ({ids}) 
-') AS DATA (id bigint, status varchar, nome varchar, datahorainicial timestamp, datahorafinal timestamp, origem varchar, codigointegracao varchar, intervalotempo varchar, diasemanasegunda boolean, diasemanaterca boolean, diasemanaquarta boolean, diasemanaquinta boolean, diasemanasexta boolean, diasemanasabado boolean, diasemanadomingo boolean, diasemanaordinalnumero varchar, diasemanaordinaldiasemana varchar, diasmes varchar, crmrequerpessoavenda boolean, crmrequercpfcnpj boolean, crmrequercelular boolean, crmrequeremail boolean, crmrequercelulartelefone boolean, crmrequerdatanascimento boolean, crmrequerendereco boolean, crmapenasprimeiravendapessoa varchar, crmapenasentrega boolean, formapagamentoaceita varchar, restringedescontomanual boolean, restringedemaisofertas boolean, crmapenasgrupoconsumidor boolean, validoapenasprevencido boolean, diasparavencimento integer, validoapenascupomdesconto boolean)
+') AS DATA ({colunas})
 )
 SELECT
 'select nq (''insert into cadernooferta (id,status,nome,origem,intervalotempo,diasemanasegunda,diasemanaterca,diasemanaquarta,diasemanaquinta,diasemanasexta,diasemanasabado,diasemanadomingo,diasemanaordinalnumero,diasemanaordinaldiasemana,crmrequerpessoavenda,crmrequercpfcnpj,crmrequercelular,crmrequeremail,crmrequercelulartelefone,crmrequerdatanascimento,crmrequerendereco,crmapenasprimeiravendapessoa,crmapenasentrega,formapagamentoaceita,restringedescontomanual,restringedemaisofertas,crmapenasgrupoconsumidor,validoapenasprevencido)
@@ -242,33 +168,7 @@ FROM
   JOIN cadernooferta on cadernooferta.id = itemcadernooferta.cadernoofertaid
 WHERE
   itemcadernooferta.cadernoofertaid in ({ids}) --ID DO CADERNO DE OFERTA ESCOLHIDO PELO CLIENTE 
-') AS DATA (id bigint, embalagemid bigint, cadernoofertaid bigint, tipooferta varchar, precooferta numeric (15,4), descontooferta numeric (15,4), leve integer, pague integer, descontolevepague numeric (15,4), tipoitem varchar, gruporemarcacaoid bigint, fabricanteid bigint, classificacaoid bigint, markup numeric (15,4), descontoporqtdtipo varchar, descontoporqtdvendaacimaqtd varchar, comboofertaid bigint, comboquantidadevenda integer, cadernoofertafaixaparcelamentoid bigint, ultimaedicaodatahora timestamp, ultimaedicaousuarioid bigint, quantidadeutilizacaoofertavenda integer, grupoembalagemid bigint, idscanntech bigint, tituloscanntech varchar,caminho VARCHAR,cadernonome VARCHAR)
-)
-SELECT
-'select nq (''insert into itemcadernooferta (id,cadernoofertaid,tipooferta,descontooferta,tipoitem,classificacaoid,descontoporqtdtipo,descontoporqtdvendaacimaqtd)
-values('||generate_id()||','||cadernooferta.id||','''''||tipooferta||''''','||descontooferta||','''''||tipoitem||''''','||classificacao.id||','''''||descontoporqtdtipo||''''','''''||descontoporqtdvendaacimaqtd||''''')'');'
-FROM itemcaderno_brava
-JOIN classificacao ON classificacao.caminho = itemcaderno_brava.caminho
-JOIN cadernooferta ON cadernooferta.nome = itemcaderno_brava.cadernonome
-"""
-
-cadernooferta_brava_classificacao_2 = """
---CLASSIFICACAO
-WITH itemcaderno_brava AS (
-SELECT
-  *
-FROM dblink('conexao_baseorigem', '
-SELECT 
-  itemcadernooferta.*,
-  classificacao.caminho,
-  cadernooferta.nome as cadernonome
-FROM 
-  itemcadernooferta
-  JOIN classificacao on classificacao.id = itemcadernooferta.classificacaoid
-  JOIN cadernooferta on cadernooferta.id = itemcadernooferta.cadernoofertaid
-WHERE
-  itemcadernooferta.cadernoofertaid in ({ids}) --ID DO CADERNO DE OFERTA ESCOLHIDO PELO CLIENTE 
-') AS DATA (id bigint, embalagemid bigint, cadernoofertaid bigint, tipooferta varchar, precooferta numeric (15,4), descontooferta numeric (15,4), leve integer, pague integer, descontolevepague numeric (15,4), tipoitem varchar, gruporemarcacaoid bigint, fabricanteid bigint, classificacaoid bigint, markup numeric (15,4), descontoporqtdtipo varchar, descontoporqtdvendaacimaqtd varchar, comboofertaid bigint, comboquantidadevenda integer, cadernoofertafaixaparcelamentoid bigint, ultimaedicaodatahora timestamp, ultimaedicaousuarioid bigint, quantidadeutilizacaoofertavenda integer, grupoembalagemid bigint, idscanntech bigint, tituloscanntech varchar,caminho VARCHAR,cadernonome VARCHAR)
+') AS DATA ({colunas},caminho VARCHAR,cadernonome VARCHAR)
 )
 SELECT
 'select nq (''insert into itemcadernooferta (id,cadernoofertaid,tipooferta,descontooferta,tipoitem,classificacaoid,descontoporqtdtipo,descontoporqtdvendaacimaqtd)
@@ -354,8 +254,7 @@ FROM dblink('conexao_baseorigem',
 	fidelidadeclassificacao.* 
 FROM fidelidadeclassificacao 
 JOIN classificacao ON classificacao.id = fidelidadeclassificacao.classificacaoid
-') AS DATA (nome VARCHAR, caminho VARCHAR, classificacaoidd BIGINT,id BIGINT, fidelidadeid BIGINT,classificacaoid BIGINT, credito NUMERIC,moedaporponto NUMERIC,
-quantidadeporponto NUMERIC,crediarioid BIGINT,pbmid BIGINT, grupoconsumidoresid BIGINT,tipofidelidade VARCHAR)
+') AS DATA (nome VARCHAR, caminho VARCHAR, classificacaoidd BIGINT,{colunas})
 )
 SELECT
 	'select nq(''insert into fidelidadeclassificacao (id, fidelidadeid, classificacaoid, moedaporponto, tipofidelidade) values ('||generate_id()||', '||fidelidade.id||', '||classificacao.id||', '||classificacaofidelidade_brava.moedaporponto||', '''''||classificacaofidelidade_brava.tipofidelidade||''''')'');'
@@ -511,8 +410,7 @@ SELECT
 	*
 FROM planoremuneracao
 WHERE status = ''A'''
-) AS DATA (id BIGINT, STATUS VARCHAR, nome VARCHAR, datainicial TIMESTAMP, datafinal TIMESTAMP, remunerardevolucaoestorno BOOLEAN, tipo VARCHAR, 
-validoapenasprevencido BOOLEAN, diasparavencimento INTEGER, remuneraritemautorizadopbm BOOLEAN)
+) AS DATA ({colunas})
 )SELECT 
 'select nq (''insert into planoremuneracao (id, status, nome, datainicial, datafinal, remunerardevolucaoestorno, tipo)
 values ('||generate_id()||','''''||STATUS||''''','''''||nome||''''','''''||datainicial||''''','''''||datafinal||''''','||remunerardevolucaoestorno||','''''||tipo||''''')'');' 
@@ -594,7 +492,7 @@ FROM dblink('conexao_baseorigem',
 	classificacao.caminho 
 from classificacaocurvaabcunidadenegocio
 join classificacao on classificacao.id = classificacaocurvaabcunidadenegocio.classificacaoid
-where unidadenegocioid = %s'
+where unidadenegocioid = {ids}'
 ) AS DATA (id BIGINT, curvaabcid BIGINT,classificacaoid BIGINT,unidadenegocioid BIGINT,diasestocagem NUMERIC,nome VARCHAR, caminho VARCHAR)
 ),
 idclassificacao AS (
@@ -620,7 +518,7 @@ SELECT * FROM dblink('conexao_baseorigem', '
    historicovenda.quantidade
 from historicovenda
 join embalagem on embalagem.id = historicovenda.embalagemid
-where historicovenda.unidadenegocioid =  %s  
+where historicovenda.unidadenegocioid =  {ids}  
  and historicovenda.data >= now() - interval ''1'' month
  and embalagem.codigobarras is not null;
 ') AS DATA (codigobarras VARCHAR, DATA VARCHAR, quantidade NUMERIC(15,4))
